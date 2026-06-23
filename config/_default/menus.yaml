@@ -5,6 +5,9 @@ main:
   - name: Home
     url: /
     weight: 10
+  - name: Quick Start
+    url: docs/getting-started/
+    weight: 15
   - name: Documentation
     url: docs/
     weight: 20

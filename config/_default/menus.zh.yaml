@@ -4,6 +4,9 @@ main:
   - name: 首页
     url: /
     weight: 10
+  - name: 快速上手
+    url: docs/getting-started/
+    weight: 15
   - name: 文档
     url: docs/
     weight: 20
@@ -16,6 +19,11 @@ main:
   - name: 社区
     url: community/
     weight: 50
+  - name: GitHub
+    url: https://github.com/modelscope/twinkle
+    weight: 60
+    params:
+      icon: github
 
 sidebar:
   - identifier: more

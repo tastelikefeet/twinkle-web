@@ -4,12 +4,11 @@ linkTitle: SFT (FSDP2)
 weight: 20
 ---
 
-使用 LoRA + FSDP2 分片 + Muon 优化器的监督微调。
+使用 FSDP2 分片 + Muon 优化器的监督微调。支持全参数和 LoRA 训练。
 
 [查看完整源码 →](https://github.com/modelscope/twinkle/blob/main/cookbook/transformers/fsdp2.py)
 
 ```python
-from peft import LoraConfig
 from torch.optim import Muon
 
 import twinkle
@@ -31,8 +30,10 @@ dataset.encode()
 
 dataloader = DataLoader(dataset=dataset, batch_size=args.training.batch_size)
 model = TransformersModel(model_id=args.model.model_id)
-model.add_adapter_to_model('default', LoraConfig(**args.get_lora_args()),
-                           gradient_accumulation_steps=args.training.gradient_accumulation_steps)
+# 默认全参数训练；可选添加 LoRA：
+# from peft import LoraConfig
+# model.add_adapter_to_model('default', LoraConfig(**args.get_lora_args()),
+#                            gradient_accumulation_steps=args.training.gradient_accumulation_steps)
 model.set_optimizer(optimizer_cls=Muon, lr=args.optimizer.learning_rate, adjust_lr_fn='match_rms_adamw')
 model.set_lr_scheduler(scheduler_cls=args.scheduler.scheduler_cls,
                        num_warmup_steps=args.scheduler.num_warmup_steps,

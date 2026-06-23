@@ -4,12 +4,11 @@ linkTitle: SFT (FSDP2)
 weight: 20
 ---
 
-Supervised fine-tuning with LoRA, FSDP2 sharding, and the Muon optimizer.
+Supervised fine-tuning with FSDP2 sharding and the Muon optimizer. Supports both full-parameter and LoRA training.
 
 [View full source →](https://github.com/modelscope/twinkle/blob/main/cookbook/transformers/fsdp2.py)
 
 ```python
-from peft import LoraConfig
 from torch.optim import Muon
 
 import twinkle
@@ -31,8 +30,10 @@ dataset.encode()
 
 dataloader = DataLoader(dataset=dataset, batch_size=args.training.batch_size)
 model = TransformersModel(model_id=args.model.model_id)
-model.add_adapter_to_model('default', LoraConfig(**args.get_lora_args()),
-                           gradient_accumulation_steps=args.training.gradient_accumulation_steps)
+# Full-parameter training by default; optionally add LoRA:
+# from peft import LoraConfig
+# model.add_adapter_to_model('default', LoraConfig(**args.get_lora_args()),
+#                            gradient_accumulation_steps=args.training.gradient_accumulation_steps)
 model.set_optimizer(optimizer_cls=Muon, lr=args.optimizer.learning_rate, adjust_lr_fn='match_rms_adamw')
 model.set_lr_scheduler(scheduler_cls=args.scheduler.scheduler_cls,
                        num_warmup_steps=args.scheduler.num_warmup_steps,

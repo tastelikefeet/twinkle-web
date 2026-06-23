@@ -33,7 +33,13 @@ class LatexOCRProcessor(Preprocessor):
 dataset = LazyDataset(DatasetMeta('ms://linxy/LaTeX_OCR'))
 dataset.map(LatexOCRProcessor())
 dataset.set_template('Qwen3_5Template', model_id=args.model.model_id, max_length=2048)
+dataloader = DataLoader(dataset=dataset, batch_size=args.training.batch_size)
 
 model = TransformersModel(model_id=args.model.model_id)
-# ... 训练循环
+model.set_optimizer(optimizer_cls='AdamW', lr=1e-4)
+
+for batch in dataloader:
+    model.forward_backward(inputs=batch)
+    model.clip_grad_and_step()
+model.save('last-checkpoint', output_dir=args.training.output_dir)
 ```

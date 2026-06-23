@@ -11,10 +11,14 @@ Direct Preference Optimization — align models using human preference data with
 ```python
 import twinkle
 from twinkle import DeviceGroup, DeviceMesh
+from twinkle.dataloader import DataLoader
+from twinkle.dataset import Dataset, DatasetMeta
 from twinkle.loss import DPOLoss
 from twinkle.metric import DPOMetric
 from twinkle.model import TransformersModel
 from twinkle.processor import InputProcessor
+
+MODEL_ID = 'ms://Qwen/Qwen3-4B'
 
 device_groups = [
     DeviceGroup(name='policy', ranks=list(range(4)), device_type='GPU'),
@@ -28,8 +32,21 @@ policy_model.add_metric(DPOMetric, beta=0.1)
 
 ref_model = TransformersModel(model_id=MODEL_ID, remote_group='reference')
 
+dataset = Dataset(dataset_meta=DatasetMeta('ms://hjh0119/shareAI-Llama3-DPO-zh-en-emoji'))
+dataset.set_template('Template', model_id=MODEL_ID)
+dataset.encode()
+dataloader = DataLoader(dataset=dataset, batch_size=8)
+
+def prepare_dpo_batch(batch):
+    """Interleave positive/negative pairs: [pos, neg, pos, neg, ...]"""
+    result = []
+    for row in batch:
+        result.append({**row, **row['positive']})
+        result.append({**row, **row['negative']})
+    return result
+
 for batch in dataloader:
-    dpo_batch = prepare_dpo_batch(batch)  # interleave [pos, neg, pos, neg, ...]
+    dpo_batch = prepare_dpo_batch(batch)
     ref_outputs = ref_model.forward_only(inputs=dpo_batch)
     policy_model.forward_backward(inputs=dpo_batch, ref_outputs=ref_outputs)
     policy_model.clip_grad_and_step()

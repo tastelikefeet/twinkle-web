@@ -7,6 +7,9 @@ twinkle-web/content/docs/usage-guide/ and twinkle-web/content/docs/components/.
 
 Run from twinkle-web/ directory:
     python3 scripts/sync-docs.py
+
+This script is invoked automatically by `pnpm dev` and `pnpm build`.
+It should NOT be gitignored — only the generated output directories are.
 """
 
 import os
@@ -103,6 +106,14 @@ EN_ZH_DIR_MAP = {
 ZH_SECTION_TITLES = {v: k for k, v in EN_ZH_DIR_MAP.items()}
 
 # ---------------------------------------------------------------------------
+# Title overrides: slug -> (en_title, zh_title)
+# Prevents sync from overwriting manually chosen titles.
+# ---------------------------------------------------------------------------
+TITLE_OVERRIDES = {
+    "usage-guide/quick-start": ("Training Guide", "训练指南"),
+}
+
+# ---------------------------------------------------------------------------
 # Hugo slug helpers
 # ---------------------------------------------------------------------------
 
@@ -138,8 +149,65 @@ def strip_first_heading(content: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# RST toctree parser
+# Link rewriting
 # ---------------------------------------------------------------------------
+
+# Mapping: broken relative path pattern -> corrected path
+# Supports both exact matches and regex-based rewrites
+LINK_REWRITES = {
+    # Chinese paths -> Hugo slugified paths
+    "./服务端和客户端/Twinkle客户端.md": "../server-and-client/twinkle-client/",
+    "../服务端和客户端/服务端.md": "../server-and-client/server/",
+    "./可观测化.md": "../observability/",
+    "./训练服务.md": "../../guide/taas/",
+    # English paths with spaces/wrong case -> slugified
+    "./Server%20and%20Client/Twinkle-Client.md": "../server-and-client/twinkle-client/",
+    "./Server and Client/Twinkle-Client.md": "../server-and-client/twinkle-client/",
+    "../Server%20and%20Client/Server.md": "../server-and-client/server/",
+    "../Server and Client/Server.md": "../server-and-client/server/",
+    "./Train-as-a-Service.md": "../../guide/taas/",
+    "./Observability.md": "../observability/",
+    # Cookbook source file -> GitHub URL
+    "../../../cookbook/server_mode/twinkle/self_host/self_cognition.py":
+        "https://github.com/modelscope/twinkle/blob/main/cookbook/client/twinkle/self_host/self_cognition.py",
+}
+
+
+def rewrite_links(content: str) -> str:
+    """Rewrite broken internal links to correct Hugo paths.
+    
+    Handles:
+    1. Exact path rewrites from LINK_REWRITES mapping
+    2. Case-insensitive .md references within the same directory (slugify them)
+    """
+    def replace_link(match):
+        full_match = match.group(0)
+        text = match.group(1)
+        target = match.group(2)
+        
+        # Check exact rewrites (including URL-decoded version)
+        from urllib.parse import unquote
+        decoded = unquote(target)
+        if target in LINK_REWRITES:
+            return f"[{text}]({LINK_REWRITES[target]})"
+        if decoded in LINK_REWRITES:
+            return f"[{text}]({LINK_REWRITES[decoded]})"
+        
+        # Auto-slugify .md references in the same directory
+        # e.g. "GRPOAdvantage.md" -> "grpoadvantage/"
+        if target.endswith(".md") and "/" not in target:
+            slug = slugify(target[:-3])
+            return f"[{text}]({slug}/)"
+        
+        # Slugify relative .md with single directory prefix
+        # e.g. "Quick-Start.md" -> "quick-start/"
+        if target.endswith(".md") and target.count("/") == 0:
+            slug = slugify(target[:-3])
+            return f"[{text}]({slug}/)"
+        
+        return full_match
+    
+    return re.sub(r'\[([^\]]*)\]\(([^)]+)\)', replace_link, content)
 
 def parse_toctree(rst_path: Path) -> tuple[str, list[str]]:
     """Parse an index.rst and return (section_title, [entry_paths]).
@@ -157,25 +225,7 @@ def parse_toctree(rst_path: Path) -> tuple[str, list[str]]:
             title = stripped
             break
 
-    # Collect toctree entries
-    entries: list[str] = []
-    in_toctree = False
-    for line in text.splitlines():
-        if ".. toctree::" in line:
-            in_toctree = True
-            continue
-        if in_toctree:
-            stripped = line.strip()
-            if stripped.startswith(":"):
-                continue                     # option line
-            if stripped == "":
-                if entries:                  # blank after entries -> end
-                    in_toctree = False
-                continue
-            entries.append(stripped)
-
-    # Also pick up entries after a second toctree (the Components section)
-    # Re-scan for all toctrees
+    # Collect all toctree entries (across multiple toctree directives)
     all_entries: list[str] = []
     in_toctree = False
     found_entry = False
@@ -271,18 +321,31 @@ def sync_md_file(src_en: Path, src_zh: Path | None,
     if not title:
         title = src_en.stem
 
+    slug = slugify(src_en.stem) + ".md"
+
+    # Check title overrides (key = relative path under OUT_DIR without .md)
+    override_key = str(dest_dir.relative_to(OUT_DIR) / slugify(src_en.stem))
+    if override_key in TITLE_OVERRIDES:
+        title = TITLE_OVERRIDES[override_key][0]
+
     # Strip the first heading since Hugo uses front-matter title
     body = strip_first_heading(content_en)
+    # Rewrite broken links
+    body = rewrite_links(body)
     out_en = add_front_matter(body, title, weight)
 
-    slug = slugify(src_en.stem) + ".md"
     (dest_dir / slug).write_text(out_en, encoding="utf-8")
 
     # Chinese version
     if src_zh and src_zh.exists():
         content_zh = src_zh.read_text(encoding="utf-8")
         title_zh = extract_title_from_md(content_zh) or title
+        # Apply Chinese title override
+        if override_key in TITLE_OVERRIDES:
+            title_zh = TITLE_OVERRIDES[override_key][1]
         body_zh = strip_first_heading(content_zh)
+        # Rewrite broken links
+        body_zh = rewrite_links(body_zh)
         out_zh = add_front_matter(body_zh, title_zh, weight)
         zh_slug = slugify(src_en.stem) + ".zh.md"
         (dest_dir / zh_slug).write_text(out_zh, encoding="utf-8")

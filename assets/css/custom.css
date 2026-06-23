@@ -614,3 +614,15 @@ footer {
   gap: 0.5rem !important;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Stats Block: force 2×2 grid instead of 4-column to prevent text truncation
+   ───────────────────────────────────────────────────────────────────────────── */
+.blox-stats .grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.blox-stats .grid h3 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
+  white-space: nowrap;
+}
+

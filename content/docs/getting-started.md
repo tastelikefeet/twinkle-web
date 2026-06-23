@@ -196,6 +196,8 @@ After deploying your model with Twinkle Server, you get an **OpenAI-compatible A
 twinkle-server launch -c server_config.yaml
 ```
 
+> For details on writing `server_config.yaml`, see [Server & Client Guide](guide/server-client/).
+
 ```python
 from openai import OpenAI
 
@@ -270,12 +272,12 @@ Auto Research turns ML training into a conversation — describe what you want t
 ## Next Steps
 
 {{< cards >}}
-  {{< card url="../guide/architecture" title="Architecture" icon="cpu-chip" subtitle="Understand the client-server architecture" >}}
   {{< card url="../guide/components" title="Components" icon="puzzle-piece" subtitle="Explore Dataset, Model, Sampler, and more" >}}
   {{< card url="../guide/runtime-modes" title="Runtime Modes" icon="server-stack" subtitle="torchrun, Ray, and HTTP deployment" >}}
-  {{< card url="../guide/server-client" title="Server & Client" icon="arrows-right-left" subtitle="HTTP training service architecture" >}}
   {{< card url="../guide/multi-tenancy" title="Multi-Tenancy" icon="user-group" subtitle="Train multiple LoRAs on shared base model" >}}
-  {{< card url="../guide/npu-support" title="NPU Support" icon="chip" subtitle="Ascend NPU training guide" >}}
+  {{< card url="../guide/server-client" title="Server & Client" icon="arrows-right-left" subtitle="HTTP training service architecture" >}}
   {{< card url="../guide/taas" title="Training as a Service" icon="cloud" subtitle="Deploy enterprise-grade training services" >}}
   {{< card url="../guide/cookbook" title="Cookbook" icon="book-open" subtitle="FSDP, MoE, RL training examples" >}}
+  {{< card url="../guide/npu-support" title="NPU Support" icon="chip" subtitle="Ascend NPU training guide" >}}
+  {{< card url="../guide/architecture" title="Architecture" icon="cpu-chip" subtitle="Understand the client-server architecture" >}}
 {{< /cards >}}

@@ -17,6 +17,9 @@ Launch: `ASCEND_RT_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node=8 t
 
 ```python
 from twinkle import DeviceMesh
+from twinkle.dataloader import DataLoader
+from twinkle.dataset import Dataset, DatasetMeta
+from twinkle.model import MegatronModel
 import twinkle
 
 MODEL_ID = 'ms://Qwen/Qwen3-4B'
@@ -25,11 +28,15 @@ MODEL_ID = 'ms://Qwen/Qwen3-4B'
 device_mesh = DeviceMesh.from_sizes(dp_size=2, tp_size=2, pp_size=2, device_type='npu')
 twinkle.initialize(mode='local', global_device_mesh=device_mesh)
 
-dataset = build_dataset()  # same as GPU recipes
+dataset = Dataset(dataset_meta=DatasetMeta('ms://swift/self-cognition'))
+dataset.set_template('Template', model_id=MODEL_ID)
+dataset.encode()
 dataloader = DataLoader(dataset=dataset, batch_size=8, num_workers=0)
 
 model = MegatronModel(model_id=MODEL_ID)
-model.add_adapter_to_model('default', LoraConfig(r=8, lora_alpha=32, target_modules='all-linear'))
+# Full-parameter training by default; optionally add LoRA:
+# from peft import LoraConfig
+# model.add_adapter_to_model('default', LoraConfig(r=8, lora_alpha=32, target_modules='all-linear'))
 model.set_optimizer(optimizer_cls='default', lr=1e-4)
 
 for step, batch in enumerate(dataloader):

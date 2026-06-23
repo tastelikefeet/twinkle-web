@@ -196,6 +196,8 @@ for data in dataloader:
 twinkle-server launch -c server_config.yaml
 ```
 
+> `server_config.yaml` 的编写方式详见 [服务端与客户端指南](guide/server-client/)。
+
 ```python
 from openai import OpenAI
 
@@ -270,12 +272,12 @@ Auto Research 将 ML 训练变成一场对话——描述你想训练什么，Ag
 ## 下一步
 
 {{< cards >}}
-  {{< card url="../guide/architecture" title="架构" icon="cpu-chip" subtitle="理解客户端-服务端架构" >}}
   {{< card url="../guide/components" title="组件" icon="puzzle-piece" subtitle="探索 Dataset、Model、Sampler 等" >}}
   {{< card url="../guide/runtime-modes" title="运行模式" icon="server-stack" subtitle="torchrun、Ray 和 HTTP 部署" >}}
-  {{< card url="../guide/server-client" title="服务端与客户端" icon="arrows-right-left" subtitle="HTTP 训练服务架构" >}}
   {{< card url="../guide/multi-tenancy" title="多租户" icon="user-group" subtitle="在共享基座模型上训练多个 LoRA" >}}
-  {{< card url="../guide/npu-support" title="NPU 支持" icon="chip" subtitle="昇腾 NPU 训练指南" >}}
+  {{< card url="../guide/server-client" title="服务端与客户端" icon="arrows-right-left" subtitle="HTTP 训练服务架构" >}}
   {{< card url="../guide/taas" title="训练即服务" icon="cloud" subtitle="部署企业级训练服务" >}}
   {{< card url="../guide/cookbook" title="Cookbook" icon="book-open" subtitle="FSDP、MoE、RL 训练示例" >}}
+  {{< card url="../guide/npu-support" title="NPU 支持" icon="chip" subtitle="昇腾 NPU 训练指南" >}}
+  {{< card url="../guide/architecture" title="架构" icon="cpu-chip" subtitle="理解客户端-服务端架构" >}}
 {{< /cards >}}
