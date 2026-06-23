@@ -16,6 +16,7 @@ sections:
       text: |
         <p style="font-size: 1.5rem; font-weight: 500; margin-bottom: 0.5rem;">让你的模型闪闪发光的训练工作台 ✨</p>
         <p style="font-size: 1.1rem; color: #64748b;">一套框架，任意规模。从笔记本到千卡集群。</p>
+        <p style="margin-top: 1rem;"><a href="https://www.modelscope.cn/organization/twinkle-kit" style="color: #624aff; text-decoration: none; font-weight: 500;">ModelScope 组织主页 →</a></p>
       primary_action:
         text: 快速开始
         url: docs/getting-started/
@@ -28,13 +29,6 @@ sections:
         link:
           text: "查看更新 →"
           url: "https://github.com/modelscope/twinkle/releases/tag/v0.4.0"
-      # 社会证明
-      extra_html: |
-        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
-          <a href="https://github.com/modelscope/twinkle"><img src="https://img.shields.io/github/stars/modelscope/twinkle?style=social" alt="GitHub Stars"></a>
-          <a href="https://github.com/modelscope/twinkle/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License"></a>
-          <a href="https://pypi.org/project/twinkle-kit/"><img src="https://img.shields.io/pypi/v/twinkle-kit?color=green" alt="PyPI"></a>
-        </div>
     design:
       spacing:
         padding: ["3rem", 0, "2rem", 0]
